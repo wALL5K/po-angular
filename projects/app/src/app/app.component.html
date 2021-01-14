@@ -1,0 +1,16 @@
+<div class="po-wrapper">
+  <po-menu [p-menus]="menuItems"></po-menu>
+
+  <po-page-default p-title="PO Page Default">
+    <po-button p-label="PO Button" (p-click)="onClick()"> </po-button>
+    <po-chart
+      class="po-md-12 po-mt-2"
+      p-title="Participation by country in world exports - %"
+      [p-options]="options"
+      [p-categories]="categories"
+      [p-series]="participationByCountryInWorldExports"
+      [p-type]="participationByCountryInWorldExportsType"
+    >
+    </po-chart>
+  </po-page-default>
+</div>

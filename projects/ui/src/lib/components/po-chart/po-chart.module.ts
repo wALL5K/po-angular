@@ -19,6 +19,7 @@ import { PoChartBarPathComponent } from './po-chart-container/po-chart-bar/po-ch
 import { PoChartPathComponent } from './po-chart-container/po-chart-line/po-chart-path/po-chart-path.component';
 import { PoChartPieComponent } from './po-chart-types/po-chart-pie/po-chart-pie.component';
 import { PoChartSeriesPointComponent } from './po-chart-container/po-chart-line/po-chart-series-point/po-chart-series-point.component';
+import { PoDomChangeDirective } from './directives/po-dom-change.directive';
 
 /**
  * @description
@@ -43,7 +44,8 @@ import { PoChartSeriesPointComponent } from './po-chart-container/po-chart-line/
     PoChartSeriesPointComponent,
     PoChartBarComponent,
     PoChartColumnComponent,
-    PoChartBarPathComponent
+    PoChartBarPathComponent,
+    PoDomChangeDirective
   ],
   exports: [PoChartComponent]
 })

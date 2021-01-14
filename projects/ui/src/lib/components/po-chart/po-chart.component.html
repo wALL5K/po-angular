@@ -1,9 +1,10 @@
-<div #chartWrapper class="po-chart-wrapper">
-  <div #chartHeader class="po-chart-header">
+<div #chartWrapper class="po-chart-wrapper" (poPoDomChange)="onDomChange($event)">
+  <div #chartHeader class="po-chart-header" (poPoDomChange)="onDomChange($event)">
     <div class="po-chart-title">{{ title }}</div>
   </div>
 
   <po-chart-container
+    (poPoDomChange)="onDomChange($event)"
     *ngIf="!isDynamicComponentType"
     [p-options]="options"
     [p-type]="type"

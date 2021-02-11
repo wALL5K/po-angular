@@ -24,7 +24,6 @@ import { PoChartSvgContainerService } from './services/po-chart-svg-container.se
 import { PoChartDynamicTypeComponent } from './po-chart-types/po-chart-dynamic-type.component';
 import { PoChartGaugeComponent } from './po-chart-types/po-chart-gauge/po-chart-gauge.component';
 import { PoChartType } from './enums/po-chart-type.enum';
-import { PoChartContainerSize } from './interfaces/po-chart-container-size.interface';
 import { PoChartMathsService } from './services/po-chart-maths.service';
 
 /**
@@ -62,8 +61,6 @@ export class PoChartComponent extends PoChartBaseComponent implements AfterViewI
   private mappings = {
     [PoChartType.Gauge]: PoChartGaugeComponent
   };
-
-  svgContainerSize: PoChartContainerSize;
 
   @ViewChild('chartContainer', { read: ViewContainerRef, static: true }) chartContainer: ViewContainerRef;
 
@@ -136,27 +133,13 @@ export class PoChartComponent extends PoChartBaseComponent implements AfterViewI
     }
   }
 
-  protected getSvgContainerSize() {
-    let axisXLabelWidth;
-    const { chartHeaderHeight, chartLegendHeight, chartWrapperWidth } = this.getChartMeasurements();
+  protected calculateAxisXLabelArea() {
+    const axisXLabels = this.chartType === PoChartType.Bar ? this.categories : this.chartSeries;
 
-    if (!this.isTypeCircular) {
-      const axisXLabels = this.chartType === PoChartType.Bar ? this.categories : this.chartSeries;
-      axisXLabelWidth = this.calculateAxisXLabelArea(this.mathsService.getLongestDataValue(axisXLabels));
-    }
-
-    this.svgContainerSize = {
-      ...this.containerService.calculateSVGContainerMeasurements(
-        this.height,
-        chartWrapperWidth,
-        chartHeaderHeight,
-        chartLegendHeight
-      ),
-      axisXLabelWidth
-    };
+    return this.getAxisXLabelArea(this.mathsService.getLongestDataValue(axisXLabels));
   }
 
-  private calculateAxisXLabelArea(axisXLabel: number) {
+  private getAxisXLabelArea(axisXLabel: number) {
     const labelPoChartPadding = PoChartPadding / 3;
     const spanElement = this.renderer.createElement('span');
 
@@ -168,6 +151,25 @@ export class PoChartComponent extends PoChartBaseComponent implements AfterViewI
     this.renderer.removeChild(this.elementRef.nativeElement, spanElement);
 
     return axisXLabelWidth > PoChartAxisXLabelArea ? axisXLabelWidth : PoChartAxisXLabelArea;
+  }
+
+  protected getSvgContainerSize() {
+    let axisXLabelWidth;
+    const { chartHeaderHeight, chartLegendHeight, chartWrapperWidth } = this.getChartMeasurements();
+
+    if (!this.isTypeCircular) {
+      axisXLabelWidth = this.calculateAxisXLabelArea();
+    }
+
+    this.svgContainerSize = {
+      ...this.containerService.calculateSVGContainerMeasurements(
+        this.height,
+        chartWrapperWidth,
+        chartHeaderHeight,
+        chartLegendHeight
+      ),
+      axisXLabelWidth
+    };
   }
 
   private chartLegendHeight(chartLegend: ElementRef) {

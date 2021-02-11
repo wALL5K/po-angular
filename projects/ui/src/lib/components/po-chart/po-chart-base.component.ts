@@ -2,6 +2,7 @@ import { EventEmitter, Input, Output, Directive, OnChanges, SimpleChanges } from
 
 import { convertToInt, isTypeof } from '../../utils/util';
 
+import { PoChartContainerSize } from './interfaces/po-chart-container-size.interface';
 import { PoChartGaugeSerie } from './po-chart-types/po-chart-gauge/po-chart-gauge-series.interface';
 import { PoChartType } from './enums/po-chart-type.enum';
 import { PoChartOptions } from './interfaces/po-chart-options.interface';
@@ -37,6 +38,7 @@ export abstract class PoChartBaseComponent implements OnChanges {
   // manipulação das séries tratadas internamente para preservar 'p-series';
   chartSeries: Array<PoChartSerie | PoChartGaugeSerie> = [];
   chartType: PoChartType;
+  svgContainerSize: PoChartContainerSize;
 
   private defaultType: PoChartType;
 
@@ -201,11 +203,21 @@ export abstract class PoChartBaseComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    const isArrayOfseries = Array.isArray(this.series) && this.series.length > 0;
+
     if (
-      (changes.series && Array.isArray(this.series) && this.series.length) ||
-      (changes.type && Array.isArray(this.series) && this.series.length)
+      (changes.series && isArrayOfseries) ||
+      (changes.type && isArrayOfseries) ||
+      (changes.categories && isArrayOfseries)
     ) {
-      this.validateSerieAndAddType(this.series);
+      this.validateSerieAndAddType(this.series as Array<PoChartSerie>);
+    }
+
+    if (changes.type || (changes.categories && !this.isTypeCircular)) {
+      this.svgContainerSize = {
+        ...this.svgContainerSize,
+        axisXLabelWidth: this.calculateAxisXLabelArea()
+      };
     }
   }
 
@@ -252,5 +264,6 @@ export abstract class PoChartBaseComponent implements OnChanges {
 
   // válido para gráficos do tipo circular e que será refatorado.
   protected abstract getSvgContainerSize(): void;
+  protected abstract calculateAxisXLabelArea(): number;
   abstract rebuildComponentRef(): void;
 }

@@ -196,6 +196,10 @@ export abstract class PoChartBaseComponent implements OnChanges {
   @Output('p-series-hover')
   seriesHover = new EventEmitter<PoChartSerie | PoChartGaugeSerie>();
 
+  get isTypeCircular() {
+    return this.defaultType === PoChartType.Pie || this.defaultType === PoChartType.Donut;
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (
       (changes.series && Array.isArray(this.series) && this.series.length) ||
@@ -229,11 +233,11 @@ export abstract class PoChartBaseComponent implements OnChanges {
   }
 
   private validateSerieAndAddType(series: Array<PoChartSerie>): void {
-    const isTypeCircular = this.defaultType === PoChartType.Pie || this.defaultType === PoChartType.Donut;
-
     this.chartSeries = series
       .filter(serie =>
-        isTypeCircular ? typeof serie.data === 'number' || typeof serie.value === 'number' : Array.isArray(serie.data)
+        this.isTypeCircular
+          ? typeof serie.data === 'number' || typeof serie.value === 'number'
+          : Array.isArray(serie.data)
       )
       .map((serie, index) => {
         if (index === 0) {

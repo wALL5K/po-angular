@@ -10,10 +10,13 @@ import {
   OnDestroy,
   ViewChild,
   ViewContainerRef,
-  OnInit
+  OnInit,
+  Renderer2
 } from '@angular/core';
 
 import { Subject } from 'rxjs';
+
+import { PoChartAxisXLabelArea, PoChartPadding } from './helpers/po-chart-default-values.constant';
 
 import { PoChartBaseComponent } from './po-chart-base.component';
 import { PoChartColorService } from './services/po-chart-color.service';
@@ -22,6 +25,7 @@ import { PoChartDynamicTypeComponent } from './po-chart-types/po-chart-dynamic-t
 import { PoChartGaugeComponent } from './po-chart-types/po-chart-gauge/po-chart-gauge.component';
 import { PoChartType } from './enums/po-chart-type.enum';
 import { PoChartContainerSize } from './interfaces/po-chart-container-size.interface';
+import { PoChartMathsService } from './services/po-chart-maths.service';
 
 /**
  * @docsExtends PoChartBaseComponent
@@ -73,7 +77,10 @@ export class PoChartComponent extends PoChartBaseComponent implements AfterViewI
     public changeDetector: ChangeDetectorRef,
     private colorService: PoChartColorService,
     private containerService: PoChartSvgContainerService,
-    private componentFactoryResolver: ComponentFactoryResolver
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private elementRef: ElementRef,
+    private mathsService: PoChartMathsService,
+    private renderer: Renderer2
   ) {
     super();
   }
@@ -130,15 +137,37 @@ export class PoChartComponent extends PoChartBaseComponent implements AfterViewI
   }
 
   protected getSvgContainerSize() {
+    let axisXLabelWidth;
     const { chartHeaderHeight, chartLegendHeight, chartWrapperWidth } = this.getChartMeasurements();
 
-    this.svgContainerSize = this.containerService.calculateSVGContainerMeasurements(
-      this.height,
-      chartWrapperWidth,
-      chartHeaderHeight,
-      chartLegendHeight,
-      this.categories?.length
-    );
+    if (!this.isTypeCircular) {
+      const axisXLabels = this.chartType === PoChartType.Bar ? this.categories : this.chartSeries;
+      axisXLabelWidth = this.calculateAxisXLabelArea(this.mathsService.getLongestDataValue(axisXLabels));
+    }
+
+    this.svgContainerSize = {
+      ...this.containerService.calculateSVGContainerMeasurements(
+        this.height,
+        chartWrapperWidth,
+        chartHeaderHeight,
+        chartLegendHeight
+      ),
+      axisXLabelWidth
+    };
+  }
+
+  private calculateAxisXLabelArea(axisXLabel: number) {
+    const labelPoChartPadding = PoChartPadding / 3;
+    const spanElement = this.renderer.createElement('span');
+
+    this.renderer.addClass(spanElement, 'po-chart-axis-x-label');
+    spanElement.innerHTML = axisXLabel;
+
+    this.renderer.appendChild(this.elementRef.nativeElement, spanElement);
+    const axisXLabelWidth = Math.ceil(spanElement.offsetWidth) + labelPoChartPadding;
+    this.renderer.removeChild(this.elementRef.nativeElement, spanElement);
+
+    return axisXLabelWidth > PoChartAxisXLabelArea ? axisXLabelWidth : PoChartAxisXLabelArea;
   }
 
   private chartLegendHeight(chartLegend: ElementRef) {

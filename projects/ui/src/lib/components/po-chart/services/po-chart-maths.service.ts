@@ -20,6 +20,21 @@ export class PoChartMathsService {
   }
 
   /**
+   * Retorna o valor com maior quantidade de dígitos entre todas as séries.
+   * Pode receber uma lista de categorias para o caso de gráfico de barra, ou então a lista de séries se o tipo de gráfico for linha ou coluna.
+   *
+   * @param series Lista de séries.
+   */
+  getLongestDataValue(value: Array<PoChartSerie | string> = []): number {
+    const isCategoriesList = value.every(item => typeof item === 'string');
+    const longestValue = isCategoriesList
+      ? this.sortLongestData(value as Array<string>)
+      : this.sortLongestData(value.map((serie: PoChartSerie) => this.sortLongestData(serie.data as Array<number>)));
+
+    return longestValue ?? 0;
+  }
+
+  /**
    * Retorna o tamanho da série que tiver mais itens.
    *
    * @param series Lista de séries.
@@ -111,5 +126,11 @@ export class PoChartMathsService {
   // Retorna a fração do número passado referente à quantidade de linhas no eixo X (gridLines)
   private getFractionFromInt(value: number) {
     return (1 / value) * (100 / 1);
+  }
+
+  private sortLongestData(serie: Array<any>): number {
+    return serie.sort((longest, current) => {
+      return current.toString().length - longest.toString().length;
+    })['0'];
   }
 }
